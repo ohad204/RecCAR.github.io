@@ -28,11 +28,11 @@ const motionSamples = [
     tag: "Yoga & Gymnastics"
   },
   {
-    id: 4,
-    category: "yoga",
-    title: "Flexibility & Balance Stretch",
-    caption: "RecCAR maintains precise arm span and leg extension without phantom joints or unnatural limb stretching.",
-    tag: "Yoga & Gymnastics"
+    id: 7,
+    category: "dance",
+    title: "Gymnastic Backflip",
+    caption: "Baseline loses limb structure mid-flip. RecCAR enforces anatomically consistent rotation and landing posture.",
+    tag: "Dance & Dynamic"
   },
   {
     id: 5,
@@ -49,11 +49,11 @@ const motionSamples = [
     tag: "Dance & Dynamic"
   },
   {
-    id: 7,
-    category: "dance",
-    title: "Gymnastic Backflip",
-    caption: "Baseline loses limb structure mid-flip. RecCAR enforces anatomically consistent rotation and landing posture.",
-    tag: "Dance & Dynamic"
+    id: 4,
+    category: "yoga",
+    title: "Flexibility & Balance Stretch",
+    caption: "RecCAR maintains precise arm span and leg extension without phantom joints or unnatural limb stretching.",
+    tag: "Yoga & Gymnastics"
   },
   {
     id: 8,
@@ -193,7 +193,7 @@ function createMotionCard(item) {
 
   function togglePlay() {
     if (video.paused) {
-      video.play().catch(() => {});
+      video.play().catch(() => { });
       playBtn.textContent = "❚❚";
     } else {
       video.pause();
@@ -212,7 +212,7 @@ function createMotionCard(item) {
   });
 
   videoWrap.addEventListener("mouseenter", () => {
-    video.play().catch(() => {});
+    video.play().catch(() => { });
     playBtn.textContent = "❚❚";
   });
 
@@ -245,7 +245,7 @@ function createMotionCard(item) {
   const obs = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
-        video.play().catch(() => {});
+        video.play().catch(() => { });
         playBtn.textContent = "❚❚";
       } else {
         video.pause();
@@ -313,7 +313,7 @@ function createAudioCard(item) {
       soundIcon.textContent = "🔊";
       soundText.textContent = "Audio Enabled";
       unmuteBtn.classList.add("active");
-      video.play().catch(() => {});
+      video.play().catch(() => { });
     } else {
       soundIcon.textContent = "🔇";
       soundText.textContent = "Click to Unmute Audio";
@@ -324,7 +324,7 @@ function createAudioCard(item) {
   playBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     if (video.paused) {
-      video.play().catch(() => {});
+      video.play().catch(() => { });
       playBtn.textContent = "❚❚";
     } else {
       video.pause();
@@ -335,7 +335,7 @@ function createAudioCard(item) {
   videoWrap.addEventListener("click", (e) => {
     if (e.target.closest(".unmute-btn")) return;
     if (video.paused) {
-      video.play().catch(() => {});
+      video.play().catch(() => { });
       playBtn.textContent = "❚❚";
     } else {
       video.pause();
@@ -347,7 +347,7 @@ function createAudioCard(item) {
   const obs = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
-        video.play().catch(() => {});
+        video.play().catch(() => { });
         playBtn.textContent = "❚❚";
       } else {
         video.pause();
@@ -464,6 +464,87 @@ function setupScrollEffects() {
 }
 
 // ─────────────────────────────────────────────────────────────
+//  SETUP HERO TEASER CARDS CONTROLS
+// ─────────────────────────────────────────────────────────────
+
+function setupTeaserCards() {
+  const teaserCards = document.querySelectorAll(".hero-teaser-card");
+  teaserCards.forEach(card => {
+    const video = card.querySelector("video");
+    if (!video) return;
+
+    const unmuteBtn = card.querySelector(".unmute-btn");
+    const playBtn = card.querySelector(".play-btn");
+    const speedOpts = card.querySelectorAll(".speed-opt");
+    const fsBtn = card.querySelector(".fs-btn");
+
+    if (unmuteBtn) {
+      const soundIcon = unmuteBtn.querySelector(".sound-icon");
+      const soundText = unmuteBtn.querySelector(".sound-text");
+
+      // Attempt unmuted play by default
+      video.muted = false;
+      video.play().catch(() => {
+        // Fallback if browser blocks unmuted autoplay without prior gesture
+        video.muted = true;
+        soundIcon.textContent = "🔇";
+        soundText.textContent = "Click to Unmute Audio";
+        unmuteBtn.classList.remove("active");
+        video.play().catch(() => { });
+      });
+
+      unmuteBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        video.muted = !video.muted;
+        if (!video.muted) {
+          soundIcon.textContent = "🔊";
+          soundText.textContent = "Audio Enabled";
+          unmuteBtn.classList.add("active");
+          video.play().catch(() => { });
+        } else {
+          soundIcon.textContent = "🔇";
+          soundText.textContent = "Click to Unmute Audio";
+          unmuteBtn.classList.remove("active");
+        }
+      });
+    }
+
+    if (playBtn) {
+      playBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (video.paused) {
+          video.play().catch(() => { });
+          playBtn.textContent = "❚❚";
+        } else {
+          video.pause();
+          playBtn.textContent = "▶";
+        }
+      });
+    }
+
+    speedOpts.forEach(opt => {
+      opt.addEventListener("click", (e) => {
+        e.stopPropagation();
+        speedOpts.forEach(s => s.classList.remove("active"));
+        opt.classList.add("active");
+        video.playbackRate = parseFloat(opt.dataset.speed);
+      });
+    });
+
+    if (fsBtn) {
+      fsBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (video.requestFullscreen) {
+          video.requestFullscreen();
+        } else if (video.webkitRequestFullscreen) {
+          video.webkitRequestFullscreen();
+        }
+      });
+    }
+  });
+}
+
+// ─────────────────────────────────────────────────────────────
 //  INIT
 // ─────────────────────────────────────────────────────────────
 
@@ -471,5 +552,7 @@ document.addEventListener("DOMContentLoaded", () => {
   renderMotionGrid("all");
   renderAudioGrid();
   setupFilterBar();
+  setupTeaserCards();
   setupScrollEffects();
 });
+
