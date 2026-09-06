@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RecCAR: Closing the Cross-Attention Gap in Joint Video Generation</title>
+  <meta name="description"
+    content="RecCAR (Reciprocal Cross-modal Attention Regularization) – a lightweight training strategy for improving bidirectional information flow in joint multimodal diffusion transformers." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <!-- MathJax for LaTeX Equations -->
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+</head>
+
+<body>
+
+  <!-- TOP BAR WITH LOGOS -->
+  <div class="topnav" id="topnav">
+    <div class="container topnav-content">
+      <div class="brand-logos">
+        <img src="figures/Bar-Ilan_University_logo.svg.png" alt="Bar-Ilan University Logo"
+          class="brand-logo biu-logo" />
+        <span class="logo-divider"></span>
+        <img src="figures/nvidia.svg" alt="NVIDIA Logo" class="brand-logo nvidia-logo" />
+      </div>
+      <nav class="nav-links">
+        <a href="#teaser">Overview</a>
+        <a href="#abstract">Abstract</a>
+        <a href="#method">Method</a>
+        <a href="#video-motion">Video-Motion</a>
+        <a href="#audio-video">Audio-Video</a>
+        <a href="#citation">Citation</a>
+      </nav>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="hero-bg"></div>
+    <div class="container hero-content">
+      <!-- <div class="venue-badge">WACV 2027</div> -->
+      <h1 class="paper-title">
+        All modalities are equal,<br />
+        but video is more equal:<br />
+        <span class="highlight">Closing the Cross-Attention Gap<br />in Joint Video Generation</span>
+      </h1>
+      <div class="authors">
+        <a href="https://ohadrahamim.github.io/" target="_blank" rel="noopener" class="author">Ohad
+          Rahamim<sup>1</sup></a>
+        <a href="#" class="author">Dvir Samuel<sup>2</sup></a>
+        <a href="#" class="author">Idan Schwartz<sup>1</sup></a>
+        <a href="#" class="author">Gal Chechik<sup>1,2</sup></a>
+      </div>
+      <div class="affiliations">
+        <span><sup>1</sup>Bar-Ilan University</span>
+        <span class="aff-sep">&middot;</span>
+        <span><sup>2</sup>NVIDIA</span>
+      </div>
+      <div class="hero-links">
+        <a href="#" class="btn btn-primary" id="paper-link">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+            <path
+              d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5L14 4.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5h-2z" />
+          </svg>
+          Paper (PDF)
+        </a>
+        <a href="#" class="btn btn-secondary" id="arxiv-link">arXiv</a>
+        <a href="https://github.com/ohad204/RecCAR/" target="_blank" rel="noopener" class="btn btn-secondary"
+          id="code-link">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+            <path
+              d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z" />
+          </svg>
+          Code
+        </a>
+      </div>
+    </div>
+    <div class="hero-scroll-hint">
+      <span>Scroll to explore</span>
+      <div class="scroll-arrow"></div>
+    </div>
+  </header>
+
+  <!-- TEASER FIGURE -->
+  <section class="section section-dark" id="teaser">
+    <div class="container">
+      <h2 class="section-title">Overview Comparison</h2>
+      <p class="section-subtitle">
+        Joint multimodal generation in 3D Video–Motion (top) and Audio–Video (bottom). Baseline models suffer from
+        anatomically implausible poses or desynchronized audio. RecCAR enforces reciprocal correspondence alignment to
+        fix these artifacts.
+      </p>
+      <div class="figure-card">
+        <img src="figures/teaser.png" alt="RecCAR Teaser Comparison" class="teaser-img" />
+        <p class="caption">
+          <strong>Overview.</strong> Top: Video–Motion baseline (EchoMotion) vs +RecCAR (ours) showing improved 3D body
+          pose alignment and realistic limb anatomy. Bottom: Audio–Video baseline (LTX-2) vs +RecCAR (ours) showing
+          precise synchronization between visual events (e.g. tapping) and audio transients.
+        </p>
+      </div>
+
+      <!-- METRICS BANNER -->
+      <div class="metrics-banner">
+        <div class="metric-pill">
+          <span class="metric-val">+8.7%</span>
+          <span class="metric-label">Human Anatomy (VBench)</span>
+          <span class="metric-sub">0.69 &rarr; 0.75</span>
+        </div>
+        <div class="metric-pill">
+          <span class="metric-val">-24.9%</span>
+          <span class="metric-label">Pose Error (N-MPJPE)</span>
+          <span class="metric-sub">0.197 &rarr; 0.148</span>
+        </div>
+        <div class="metric-pill">
+          <span class="metric-val">-6.5%</span>
+          <span class="metric-label">AV Desynchronization</span>
+          <span class="metric-sub">0.804 &rarr; 0.752</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABSTRACT -->
+  <section class="section" id="abstract">
+    <div class="container">
+      <h2 class="section-title">Abstract</h2>
+      <div class="abstract-card">
+        <p>
+          Video is a rich representation of a physical event, capturing appearance, geometry, motion, and temporal
+          evolution. Other modalities, such as 3D body motion or audio, encode narrower aspects of the same event. We
+          find that joint multimodal diffusion transformers exhibit a corresponding asymmetry in cross-modal
+          correspondence: companion modalities develop strong correspondences to video, but the reciprocal
+          correspondences through which they <em>constrain</em> video remain substantially weaker.
+        </p>
+        <p>
+          We express both directions as comparable correspondence distributions over video tokens and define their
+          disagreement as the <strong>reciprocal correspondence gap</strong>. We introduce <strong
+            class="reccar-name">RecCAR</strong> (Reciprocal Cross-modal Attention Regularization), a KL regularizer that
+          uses the well-established video-to-modality correspondence as a fixed reference and aligns the weaker
+          modality-to-video correspondence toward it.
+        </p>
+        <p>
+          Across joint video&ndash;motion and video&ndash;audio generation, RecCAR improves the Human Anatomy score from
+          0.69 &rarr; <strong>0.75</strong> and reduces audio&ndash;video desynchronization from 0.804 &rarr;
+          <strong>0.752</strong>, while improving overall generation quality.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- METHOD -->
+  <section class="section section-tinted" id="method">
+    <div class="container">
+      <h2 class="section-title">Method: Reciprocal Attention Alignment</h2>
+      <p class="section-subtitle">
+        RecCAR closes the cross-attention gap by transferring learned spatial and temporal structure from the strong
+        Video&rarr;Modality pathway to the weaker Modality&rarr;Video pathway.
+      </p>
+
+      <div class="idea-grid">
+        <div class="idea-card">
+          <div class="idea-icon">&#127919;</div>
+          <h3>Asymmetric Attention</h3>
+          <p>Joint multimodal generators are <em>architecturally</em> bidirectional but <em>functionally</em>
+            asymmetric. Video&rarr;Modality correspondences are strong; Modality&rarr;Video correspondences remain weak.
+          </p>
+        </div>
+        <div class="idea-card">
+          <div class="idea-icon">&#128208;</div>
+          <h3>Correspondence Gap</h3>
+          <p>We re-normalize both attention directions over video tokens, making them directly comparable. Their KL
+            divergence measures the <em>reciprocal correspondence gap</em>.</p>
+        </div>
+        <div class="idea-card">
+          <div class="idea-icon">&#9889;</div>
+          <h3>RecCAR Regularizer</h3>
+          <p>We stop-gradient the strong V&rarr;M direction and optimize the weaker M&rarr;V pathway toward it via a KL
+            loss, using LoRA fine-tuning to preserve the base model.</p>
+        </div>
+        <div class="idea-card">
+          <div class="idea-icon">&#127760;</div>
+          <h3>Modality-Agnostic</h3>
+          <p>The same objective applies across substantially different tasks: video + 3D human motion (EchoMotion) and
+            video + audio (LTX-2, JavisDiT++).</p>
+        </div>
+      </div>
+
+      <!-- INTRO CONCEPT BOX -->
+      <div class="method-concept-box">
+        <p>
+          Reciprocal cross-modal attention maps should ideally be symmetric: asking <em>"which video pixels correspond
+            to the head token?"</em> <span style="white-space: nowrap;">($V \to M$)</span> ought to yield the same information as asking <em>"which pixels does
+            the head token attend to?"</em> <span style="white-space: nowrap;">($M \to V$)</span>.
+        </p>
+      </div>
+
+      <!-- METHOD FIGURES -->
+      <div class="method-figures-grid">
+        <div class="figure-card">
+          <img src="figures/method.png" alt="RecCAR Architecture Overview" />
+          <p class="caption"><strong>RecCAR block architecture.</strong> The red path shows the directional KL
+            regularization using fixed Video&rarr;Modality correspondence to strengthen Modality&rarr;Video.</p>
+        </div>
+        <div class="figure-card">
+          <img src="figures/VM_vs_MV.png" alt="Reciprocal Correspondence Asymmetry" />
+          <p class="caption"><strong>Attention asymmetry visualization.</strong> For a head motion token, $V \to M$
+            correctly localizes the head, while the reciprocal $M \to V$ direction focuses erroneously on the upper
+            torso.</p>
+        </div>
+      </div>
+
+
+    </div>
+  </section>
+
+  <!-- VIDEO-MOTION RESULTS -->
+  <section class="section" id="video-motion">
+    <div class="container">
+      <div class="section-header-wrap">
+        <h2 class="section-title">Video + 3D Human Motion</h2>
+        <p class="section-subtitle">
+          Comparing <strong>EchoMotion (Baseline)</strong> on the left against <strong>EchoMotion + RecCAR
+            (Ours)</strong> on the right across 13 diverse 3D human motion sequences. RecCAR eliminates phantom limbs,
+          anatomically impossible twists, and joint misalignment.
+        </p>
+      </div>
+
+
+
+      <!-- VIDEO CARDS GRID -->
+      <div class="video-cards-grid" id="motion-videos-grid"></div>
+
+
+    </div>
+  </section>
+
+  <!-- AUDIO-VIDEO RESULTS -->
+  <section class="section section-tinted" id="audio-video">
+    <div class="container">
+      <div class="section-header-wrap">
+        <h2 class="section-title">Video + Audio Generation</h2>
+        <p class="section-subtitle">
+          Comparing <strong>LTX-2 / JavisDiT++ (Baseline)</strong> against <strong>+ RecCAR (Ours)</strong> across 4
+          audio–video clips. Click the 🔊 button on any player to enable audio playback and hear the cross-modal
+          temporal synchronization!
+        </p>
+      </div>
+
+      <!-- AUDIO VIDEO GRID -->
+      <div class="video-cards-grid audio-cards-grid" id="audio-videos-grid"></div>
+
+
+    </div>
+  </section>
+
+  <!-- CITATION -->
+  <section class="section section-dark" id="citation">
+    <div class="container">
+      <h2 class="section-title">Citation</h2>
+      <div class="bibtex-block">
+        <button class="copy-btn" id="copy-bibtex" onclick="copyBibtex()">Copy BibTeX</button>
+        <pre id="bibtex-text">@article{rahamim2027reccar,
+  title     = {All modalities are equal, but video is more equal:
+               Closing the Cross-Attention Gap in Joint Video Generation},
+  author    = {Rahamim, Ohad and Samuel, Dvir and Schwartz, Idan and Chechik, Gal},
+  journal   = {arXiv preprint},
+  year      = {2027}
+}</pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container">
+      <p>RecCAR &middot; Bar-Ilan University &amp; NVIDIA</p>
+    </div>
+  </footer>
+
+  <script src="main.js"></script>
+</body>
+
+</html>
